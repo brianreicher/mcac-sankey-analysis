@@ -11,7 +11,7 @@ import pandas as pd
 from math import floor
 
 
-class Sankey:
+class Sankey():
     """Sankey Class"""
     def __init__(self, filepath='../data/Artists.json', src=None, targ=None, vals=None,
                  desired_columns='all', threshold_value=20):
@@ -39,19 +39,23 @@ class Sankey:
         df = df.dropna()
 
         # check for 'BeginDate' column and use a lambda func to convert all values 'i' to their nearest decade
-        # tried using _func() but lambda function showed better performance
         if 'BeginDate' in df.columns:
+            # started building a class function but lambda function showed better performance
             df['DecadeBorn'] = df.BeginDate.apply(lambda i: floor(i/10)*10)
+            # remove initial 'BeginDate' column
             df = df.drop(columns=['BeginDate'])
+            # filter all unknown (zeroed) birth decades
             df = df[df.DecadeBorn != 0]
 
-        # convert to lowercase for formatting purposes
+        # convert to lowercase to eliminate possible sankey confusion & repetition
         if 'Gender' in df.columns:
             df['Gender'] = df['Gender'].str.lower()
 
+        # convert to lowercase to eliminate possible sankey confusion & repetition
         if 'Nationality' in df.columns:
             df['Nationality'] = df['Nationality'].str.lower()
 
+        # reassign dataframe element and mark the 'cleaned' checker as True
         self.dataframe = df
         self.cleaned = True
 
@@ -67,6 +71,9 @@ class Sankey:
         # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
         df = df.groupby([self.src, self.targ]).size().reset_index(name="counts")
         df = df[(df.counts >= self.threshold)]
+
+        # reset index to start from 0
+        df.index = range(len(df))
         self.dataframe = df
 
     def _code_mapping(self) -> list:
@@ -106,13 +113,16 @@ class Sankey:
         line_color = kwargs.get('line_color', 'black')
         line_width = kwargs.get('line_width', 1)
 
-        print(self.dataframe)
         # Init link & node dicts
-        # link = {'source': self.df[self.src],
-        #         'target': self.df[self.targ],
-        #         'value': self.df[self.vals]}
-        # node = {'label': labels, 'pad': pad, 'thickness': thickness, 'line': {'color': line_color, 'width': line_width}}
-        #
-        # sankey: go.Sankey = go.Sankey(link=link, node=node)
-        # fig: go.Figure = go.Figure(sankey)
-        # fig.show()
+        link = {'source': self.df[self.src],
+                'target': self.df[self.targ],
+                'value': self.df[self.vals]}
+        node = {'label': labels, 'pad': pad, 'thickness': thickness, 'line': {'color': line_color, 'width': line_width}}
+
+        sankey: go.Sankey = go.Sankey(link=link, node=node)
+        fig: go.Figure = go.Figure(sankey)
+        fig.show()
+
+    def make_multilayer_sankey(self) -> None:
+        """ Function to generate multi-layered Sankey diagrams"""
+        pass
