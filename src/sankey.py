@@ -1,19 +1,10 @@
-'''
+"""
+File: sankey.py
 
-2. Aggregate the data, counting the number of artists grouped by both nationality and decade.
-4. Filter out rows whose artist count is below some threshold. You’ll want to experiment with this
-value to produce a visually appealing visualization. I suggest trying a starting threshold around
-20.
-5. Generate a Sankey diagram with nationality on the left (sources) and decade of birth on the
-right (targets)
-6. Repeat steps 2-5, but this time count the number of artists grouped by nationality and gender.
-Your Sankey diagram will show nationalities on the left and gender on the right.
-7. Repeat steps 2-5, grouping by gender and decade. Your Sankey diagram will display gender on
-the left and decade of birth on the right.
-8. Write a ½ to 1-page interpretation of your results. What insights do you glean from your
-visualizations? What does this data science exercise possibly tell us about diversity, inclusion,
-and bias in the art world?
-'''
+Description: A plotly & pandas wrapper API for generating Sankey & multi-layer Sankey diagrams
+
+Author: Brian Reicher
+"""
 
 import plotly.graph_objects as go
 import pandas as pd
@@ -21,27 +12,29 @@ from math import floor
 
 
 class Sankey:
-
+    """Sankey Class"""
     def __init__(self, filepath='../data/Artists.json', src=None, targ=None, vals=None,
-                 desired_columns='all', threshold_value=2):
+                 desired_columns='all', threshold_value=20):
         self.dataframe = pd.read_json(filepath)
         self.src = src
         self.targ = targ
         self.vals = vals
-        self.desired_columns = desired_columns
-        self.threshold_value = threshold_value
+        self.columns = desired_columns
+        self.threshold = threshold_value
 
-        # checker bool to see if the dataframe has been cleaned
+        # checker booleans to see if the dataframe has been cleaned and/or grouped
         self.cleaned = False
+        self.grouped = False
 
-    def clean_data(self):
+    @staticmethod
+    def _clean_data(self):
         """ Helper function to clean dataframe values """
 
         # set dataframe var to avoid using memory space
-        if type(self.desired_columns) is str and self.desired_columns.lower() == 'all':
+        if type(self.columns) is str and self.columns.lower() == 'all':
             df = self.dataframe
         else:
-            df = self.dataframe[self.desired_columns]
+            df = self.dataframe[self.columns]
 
         # drop Null values
         df = df.dropna()
@@ -63,25 +56,30 @@ class Sankey:
         self.dataframe = df
         self.cleaned = True
 
-    # TODO
-    def group_df(self):
-        # if dataframe isn't cleaned, then clean it
+    @staticmethod
+    def _group_df(self):
+        """Groups dataframe by src & targ columns, while filtering counts underneath a threshold"""
+        # if dataframe isn't cleaned, then clean
         if self.cleaned is False:
-            self.clean_data()
+            self._clean_data()
         df = self.dataframe
 
-        # Group By category, count by size(), and filter if size() isn't above a threshold
-        df = df.groupby([self.src, self.targ]).size()
-        df = df[(df.counts >= self.threshold_value)]
+        # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
+        df = df.groupby([self.src, self.targ]).size().reset_index(name="counts")
+        df = df[(df.counts >= self.threshold)]
         self.dataframe = df
-        return self.dataframe
 
     def _code_mapping(self) -> list:
         """Maps labels/strings in self.src and self.targ and converts them into integers"""
+        # if dataframe isn't cleaned and grouped, then clean and group
+        if self.grouped is False:
+            self._group_df()
+
+        # assignment to save memory
+        df = self.dataframe
 
         # Extract distinct labels
-        labels = sorted(list(set(list(self.dataframe[self.src]) +
-                                 list(self.dataframe[self.targ]))))
+        labels = list(set(list(df[self.src]) + list(df[self.targ])))
 
         # define integer codes
         codes = list(range(len(labels)))
@@ -90,12 +88,15 @@ class Sankey:
         lc_map = dict(zip(labels, codes))
 
         # in df, substitute codes for labels
-        self.df = self.dataframe.replace({self.src: lc_map, self.targ: lc_map})
+        self.df = df.replace({self.src: lc_map, self.targ: lc_map})
         return labels
 
     def make_sankey(self, **kwargs) -> None:
         """ Function to generate sankey diagrams"""
+        # set sankey labels via code mapping
         labels = self._code_mapping()
+
+        # check for sankey vals, set to 1 if None
         if self.vals is None:
             self.vals = [1] * len(self.df)
 
@@ -114,6 +115,3 @@ class Sankey:
         sankey: go.Sankey = go.Sankey(link=link, node=node)
         fig: go.Figure = go.Figure(sankey)
         fig.show()
-
-
-
