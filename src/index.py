@@ -2,7 +2,7 @@ import sankey
 
 
 def main():
-    sankey.Sankey(src='Nationality', targ='DecadeBorn').make_sankey()
+    return sankey.Sankey(src='Nationality', targ='DecadeBorn', vals='count', desired_columns=['Nationality', 'BeginDate']).make_sankey()
 
 
 if __name__ == '__main__':

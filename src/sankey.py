@@ -26,7 +26,6 @@ class Sankey:
         self.cleaned = False
         self.grouped = False
 
-    @staticmethod
     def _clean_data(self):
         """ Helper function to clean dataframe values """
 
@@ -56,12 +55,13 @@ class Sankey:
         self.dataframe = df
         self.cleaned = True
 
-    @staticmethod
     def _group_df(self):
         """Groups dataframe by src & targ columns, while filtering counts underneath a threshold"""
         # if dataframe isn't cleaned, then clean
         if self.cleaned is False:
             self._clean_data()
+
+        # assignment to save memory
         df = self.dataframe
 
         # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
@@ -91,7 +91,7 @@ class Sankey:
         self.df = df.replace({self.src: lc_map, self.targ: lc_map})
         return labels
 
-    def make_sankey(self, **kwargs) -> None:
+    def make_sankey(self, **kwargs):
         """ Function to generate sankey diagrams"""
         # set sankey labels via code mapping
         labels = self._code_mapping()
@@ -106,12 +106,13 @@ class Sankey:
         line_color = kwargs.get('line_color', 'black')
         line_width = kwargs.get('line_width', 1)
 
+        print(self.dataframe)
         # Init link & node dicts
-        link = {'source': self.df[self.src],
-                'target': self.df[self.targ],
-                'value': self.df[self.vals]}
-        node = {'label': labels, 'pad': pad, 'thickness': thickness, 'line': {'color': line_color, 'width': line_width}}
-
-        sankey: go.Sankey = go.Sankey(link=link, node=node)
-        fig: go.Figure = go.Figure(sankey)
-        fig.show()
+        # link = {'source': self.df[self.src],
+        #         'target': self.df[self.targ],
+        #         'value': self.df[self.vals]}
+        # node = {'label': labels, 'pad': pad, 'thickness': thickness, 'line': {'color': line_color, 'width': line_width}}
+        #
+        # sankey: go.Sankey = go.Sankey(link=link, node=node)
+        # fig: go.Figure = go.Figure(sankey)
+        # fig.show()
