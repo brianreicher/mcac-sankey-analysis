@@ -11,8 +11,18 @@ import pandas as pd
 from math import floor
 
 
-class Sankey():
-    """Sankey Class"""
+class Sankey:
+    """
+        Sankey API for developing single & multi-layer sankey diagrams given various data formats
+
+        :param filepath
+            File path relative to the API wrapper to pull sankey data from
+        :param src
+        :param targ
+        :param vals
+        :param desired_columns
+        :param threshold_value
+    """
     def __init__(self, filepath='../data/Artists.json', src=None, targ=None, vals=None,
                  desired_columns='all', threshold_value=20):
         self.dataframe = pd.read_json(filepath)
@@ -23,11 +33,15 @@ class Sankey():
         self.threshold = threshold_value
 
         # checker booleans to see if the dataframe has been cleaned and/or grouped
-        self.cleaned = False
-        self.grouped = False
+        self.is_cleaned = False
+        self.is_grouped = False
 
     def _clean_data(self):
-        """ Helper function to clean dataframe values """
+        """
+            Helper function to throw data through a preprocessing pipeline in order to retrieve the desired
+            dataframe columns for sankey sources/targets, as well as format
+            :rtype: None
+        """
 
         # set dataframe var to avoid using memory space
         if type(self.columns) is str and self.columns.lower() == 'all':
@@ -38,7 +52,7 @@ class Sankey():
         # drop Null values
         df = df.dropna()
 
-        # check for 'BeginDate' column and use a lambda func to convert all values 'i' to their nearest decade
+        # check for 'BeginDate' column and use a lambda func to convert all values to nearest decade over literal date
         if 'BeginDate' in df.columns:
             # started building a class function but lambda function showed better performance
             df['DecadeBorn'] = df.BeginDate.apply(lambda i: floor(i/10)*10)
@@ -47,22 +61,19 @@ class Sankey():
             # filter all unknown (zeroed) birth decades
             df = df[df.DecadeBorn != 0]
 
-        # convert to lowercase to eliminate possible sankey confusion & repetition
-        if 'Gender' in df.columns:
-            df['Gender'] = df['Gender'].str.lower()
-
-        # convert to lowercase to eliminate possible sankey confusion & repetition
-        if 'Nationality' in df.columns:
-            df['Nationality'] = df['Nationality'].str.lower()
+        # convert any string-based column to lowercase in order to eliminate sankey confusion & redundancies
+        for i in df.columns:
+            if df[i].dtypes is str:
+                df[i] = df[i].str.lower()
 
         # reassign dataframe element and mark the 'cleaned' checker as True
         self.dataframe = df
-        self.cleaned = True
+        self.is_cleaned = True
 
     def _group_df(self):
         """Groups dataframe by src & targ columns, while filtering counts underneath a threshold"""
         # if dataframe isn't cleaned, then clean
-        if self.cleaned is False:
+        if self.is_cleaned is False:
             self._clean_data()
 
         # assignment to save memory
@@ -75,11 +86,12 @@ class Sankey():
         # reset index to start from 0
         df.index = range(len(df))
         self.dataframe = df
+        self.is_grouped = True
 
     def _code_mapping(self) -> list:
         """Maps labels/strings in self.src and self.targ and converts them into integers"""
         # if dataframe isn't cleaned and grouped, then clean and group
-        if self.grouped is False:
+        if self.is_grouped is False:
             self._group_df()
 
         # assignment to save memory
@@ -125,4 +137,11 @@ class Sankey():
 
     def make_multilayer_sankey(self) -> None:
         """ Function to generate multi-layered Sankey diagrams"""
-        pass
+        # assignment to save memory, check if data is cleaned
+        if self.is_cleaned is False:
+            self._clean_data()
+        df = self.dataframe
+
+        # list all src and targ destinations using list comprehensions
+        sources = [df[i] for i in self.src]
+        targs = [df[j] for j in self.targ]
