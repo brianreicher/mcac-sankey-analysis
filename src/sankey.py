@@ -109,7 +109,7 @@ class Sankey:
             df.index = range(len(df))
 
         # multi-layer grouping, meaning sources or targs are lists
-        elif type(self.src) or type(self.targ) is list:
+        elif type(self.src) is list or type(self.targ) is list:
             # lists of sources & targs
             srcs = []
             for i in self.src:
