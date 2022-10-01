@@ -1,7 +1,7 @@
 """
 File: index.py
 
-Description: a simple script for testing my Sankey API
+Description: a simple script for testing Sankey API
 
 Author: Brian Reicher
 """
@@ -9,7 +9,10 @@ Author: Brian Reicher
 import sankey
 
 
-def main():
+def main() -> None:
+    """
+        Tester for single-level Sankey examples
+    """
     # Nationality - Birth Decade Plot
     sankey.Sankey(src='Nationality', targ='DecadeBorn', vals='counts',
                   desired_columns=['Nationality', 'BeginDate']).make_sankey()
@@ -24,9 +27,13 @@ def main():
 
 
 def multi():
-    sankey.Sankey(src=['Nationality', 'DecadeBorn'], targ='DecadeBorn', vals='counts',
-                  desired_columns=['Nationality', 'BeginDate']).make_multilayer_sankey()
+    """
+        Tester for multi-level Sankey examples
+    """
+    sankey.Sankey(src=['Nationality', 'DecadeBorn'], targ=['Gender'], vals='counts',
+                  desired_columns=['Gender', 'Nationality', 'BeginDate']).make_multilayer_sankey()
 
 
 if __name__ == '__main__':
-     main()
+    multi()
+
