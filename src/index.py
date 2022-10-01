@@ -19,7 +19,7 @@ def main() -> None:
 
     # Nationality - Gender Plot
     sankey.Sankey(src='Nationality', targ='Gender', vals='counts',
-                  desired_columns=['Nationality', 'Gender']).make_sankey()
+                  desired_columns=['Nationality', 'Gender'], threshold_value=30).make_sankey()
 
     # Gender - Birth Decade Plot
     sankey.Sankey(src='Gender', targ='DecadeBorn', vals='counts',
@@ -28,12 +28,12 @@ def main() -> None:
 
 def multi():
     """
-        Tester for multi-level Sankey examples
+        Tester for multi-level Sankey examples, not fully working :(
     """
     sankey.Sankey(src=['Nationality', 'DecadeBorn'], targ=['Gender'], vals='counts',
-                  desired_columns=['Gender', 'Nationality', 'BeginDate']).make_multilayer_sankey()
+                  desired_columns=['Gender', 'Nationality', 'BeginDate']).make_sankey()
 
 
 if __name__ == '__main__':
-    multi()
+    main()
 

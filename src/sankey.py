@@ -124,7 +124,7 @@ class Sankey:
 
     def make_sankey(self, **kwargs) -> None:
         """
-             Generate sankey diagrams & save as PNG/HTML files
+             Generate sankey or multi-level Sankey diagrams & save as PNG/HTML files
              :param: **kwargs:
                 Formatting **kwargs to change visual components of the Sankey diagram
             :rtype: None:
@@ -151,6 +151,7 @@ class Sankey:
         # set and show desired Sankey plot
         sankey: go.Sankey = go.Sankey(link=link, node=node)
         fig: go.Figure = go.Figure(sankey)
+        fig.update_layout(title_text=f'{self.src} vs {self.targ}')
         fig.show()
 
         # search for image directory in 'data' directory if it exists, else look to create in-spot
@@ -170,22 +171,3 @@ class Sankey:
         # save figure as an interactive HTML file and PNG, need to pip install kaleido
         fig.write_html(fp + f'{self.src}_{self.targ}_sankey.html')
         fig.write_image(fp + f'{self.src}_{self.targ}_sankey.png')
-
-    def make_multilayer_sankey(self) -> None:
-        """
-            Function to generate multi-layered Sankey diagrams
-            :rtype: None:
-        """
-        # assignment to save memory, check if data is cleaned & grouped
-        if self.is_grouped is False:
-            self._clean_data()
-        df = self.dataframe
-
-        # set sankey labels via code mapping
-        labels = self._code_mapping()
-
-        # check for sankey vals, set to 1 if None
-        if self.vals is None:
-            self.vals = [1] * len(self.df)
-
-        print(labels)
