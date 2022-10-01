@@ -101,8 +101,8 @@ class Sankey:
             # reset index to start from 0
             df.index = range(len(df))
 
-        # multi-layer grouping
-        else:
+        # multi-layer grouping, meaning sources or targs are lists
+        elif type(self.src) or type(self.targ) is list:
             # lists of sources & targs
             srcs = []
             for i in self.src:
@@ -111,20 +111,22 @@ class Sankey:
             targs = []
             for j in self.targ:
                 targs += list(df[j])
-            # srcs = [list(df[s]) for s in self.src]
-            # targs = [list(df[t]) for t in self.targ]
 
-            # reset dataframe
+            # reset dataframe with source and then add targ column
             df = pd.DataFrame(srcs, columns=['_'.join(self.src)])
             df['_'.join(self.targ)] = targs
 
             # rename columns with sources and targets joined on an underscore
             self.src = '_'.join(self.src)
             self.targ = '_'.join(self.targ)
+
             # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
             df = df.groupby([self.src, self.targ]).size().reset_index(name='counts')
 
-            print(df)
+        # raise error if not in prior types
+        else:
+            raise RuntimeError('Please provide valid source & target types')
+
         # reassignment and set grouped to True
         self.dataframe = df
         self.is_grouped = True
