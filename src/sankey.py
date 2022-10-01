@@ -34,12 +34,19 @@ class Sankey:
                 Threshold number of paintings in order to include in Sankey diagram
         """
         self.filepath = filepath
-        self.dataframe = pd.read_json(filepath)
         self.src = src
         self.targ = targ
         self.vals = vals
         self.columns = desired_columns
         self.threshold = threshold_value
+
+        # set file type given final element of data filepath
+        file_type = filepath.split('.')
+        file_type = file_type[len(file_type)-1]
+
+        # set dataframe given specific filetype & pandas datareader
+        reader_type = getattr(pd, f'read_{file_type}')
+        self.dataframe = reader_type(filepath)
 
         # checker booleans to see if the dataframe has been cleaned and/or grouped
         self.is_cleaned = False
@@ -199,7 +206,7 @@ class Sankey:
         # try/except to make image directory
         try:
             os.mkdir(fp)
-        except FileExistsError:
+        except:
             pass
 
         # save figure as an interactive HTML file and PNG, need to pip install kaleido
