@@ -59,6 +59,10 @@ class Sankey:
         # drop Null values
         df = df.dropna()
 
+        # drop artists without listed countries
+        if 'Nationality' in df.columns:
+            df = df[(df.Nationality != 'Nationality unknown')]
+
         # check for 'BeginDate' column and use a lambda func to convert all values to nearest decade over literal date
         if 'BeginDate' in df.columns:
             # lambda function to drop year 0s, scale to the nearest decade, and scale back up to 4 digits
