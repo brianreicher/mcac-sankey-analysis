@@ -100,7 +100,7 @@ class Sankey:
         df = self.dataframe
 
         # single layer grouping
-        if type(self.src) and type(self.targ) is str:
+        if type(self.src) is str and type(self.targ) is str:
             # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
             df = df.groupby([self.src, self.targ]).size().reset_index(name="counts")
             df = df[(df.counts >= self.threshold)]
