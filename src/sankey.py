@@ -92,12 +92,40 @@ class Sankey:
         # assignment to save memory
         df = self.dataframe
 
-        # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
-        df = df.groupby([self.src, self.targ]).size().reset_index(name="counts")
-        df = df[(df.counts >= self.threshold)]
+        # single layer grouping
+        if type(self.src) and type(self.targ) is str:
+            # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
+            df = df.groupby([self.src, self.targ]).size().reset_index(name="counts")
+            df = df[(df.counts >= self.threshold)]
 
-        # reset index to start from 0
-        df.index = range(len(df))
+            # reset index to start from 0
+            df.index = range(len(df))
+
+        # multi-layer grouping
+        else:
+            # lists of sources & targs
+            srcs = []
+            for i in self.src:
+                srcs += list(df[i])
+
+            targs = []
+            for j in self.targ:
+                targs += list(df[j])
+            # srcs = [list(df[s]) for s in self.src]
+            # targs = [list(df[t]) for t in self.targ]
+
+            # reset dataframe
+            df = pd.DataFrame(srcs, columns=['_'.join(self.src)])
+            df['_'.join(self.targ)] = targs
+
+            # rename columns with sources and targets joined on an underscore
+            self.src = '_'.join(self.src)
+            self.targ = '_'.join(self.targ)
+            # Group By category, add counts columns by size(), and filter if size() isn't above a threshold
+            df = df.groupby([self.src, self.targ]).size().reset_index(name='counts')
+
+            print(df)
+        # reassignment and set grouped to True
         self.dataframe = df
         self.is_grouped = True
 
