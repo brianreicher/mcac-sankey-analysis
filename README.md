@@ -1,2 +1,2 @@
 # sankey-art
-Plotly visualizations of Chicago Museum of Contemporary Art data
+Plotly visualizations & analysis of trends at the Museum of Contempary Art Chicago
